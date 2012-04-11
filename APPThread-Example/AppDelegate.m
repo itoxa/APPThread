@@ -3,10 +3,11 @@
 //  APPThread-Example
 //
 //  Created by Anton Pavlyuk on 06.04.12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//  Copyright (c) 2012 iHata. All rights reserved.
 //
 
 #import "AppDelegate.h"
+#import "TestAPPThread.h"
 
 @implementation AppDelegate
 
@@ -14,11 +15,33 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    NSLog(@"mainThread (before) = %@", [NSThread currentThread]);
+    TestAPPThread *testThread = [[TestAPPThread alloc] init];
+    [testThread start];
+    NSArray *array = [testThread awesomeArrayWithFirstObject:@"first"];
+    [TestAPPThread testClassMethod];
+    NSLog(@"returned object from restThread = %@", array);
+    NSLog(@"mainThread (after) = %@", [NSThread currentThread]);
+    
+    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
+    [self.window addSubview:[self label]];
     [self.window makeKeyAndVisible];
     return YES;
+}
+
+- (UILabel *)label
+{
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0, 220.0, 320.0, 40.0)];
+    label.backgroundColor = [UIColor clearColor];
+    label.textAlignment = UITextAlignmentCenter;
+    label.textColor = [UIColor blackColor];
+    label.font = [UIFont boldSystemFontOfSize:20.0];
+    label.text = @"See logs";
+    
+    return label;
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application

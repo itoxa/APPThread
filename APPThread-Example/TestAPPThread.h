@@ -1,5 +1,5 @@
 //
-//  AppDelegate.h
+//  TestAPPThread.h
 //  APPThread-Example
 //
 //  Created by Anton Pavlyuk on 06.04.12.
@@ -7,9 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "APPThread.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate>
+@interface TestAPPThread : APPThread
 
-@property (strong, nonatomic) UIWindow *window;
+- (NSArray *)awesomeArrayWithFirstObject:(id)obj;
++ (void)testClassMethod;
 
 @end

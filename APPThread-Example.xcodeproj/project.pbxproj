@@ -13,6 +13,8 @@
 		D13053F8152EDD2F0028A900 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D13053F6152EDD2F0028A900 /* InfoPlist.strings */; };
 		D13053FA152EDD2F0028A900 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D13053F9152EDD2F0028A900 /* main.m */; };
 		D13053FE152EDD2F0028A900 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D13053FD152EDD2F0028A900 /* AppDelegate.m */; };
+		D130540D152EDE860028A900 /* TestAPPThread.m in Sources */ = {isa = PBXBuildFile; fileRef = D130540C152EDE860028A900 /* TestAPPThread.m */; };
+		D143A39B153610AC00439B6E /* APPThread.m in Sources */ = {isa = PBXBuildFile; fileRef = D143A39A153610AC00439B6E /* APPThread.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,12 +22,16 @@
 		D13053ED152EDD2F0028A900 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		D13053EF152EDD2F0028A900 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D13053F1152EDD2F0028A900 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		D13053F5152EDD2F0028A900 /* APPThread-Example-Info.plist */ = {isa = PBXFileReference; path = "APPThread-Example-Info.plist"; sourceTree = "<group>"; };
+		D13053F5152EDD2F0028A900 /* APPThread-Example-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "APPThread-Example-Info.plist"; sourceTree = "<group>"; };
 		D13053F7152EDD2F0028A900 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D13053F9152EDD2F0028A900 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		D13053FB152EDD2F0028A900 /* APPThread-Example-Prefix.pch */ = {isa = PBXFileReference; path = "APPThread-Example-Prefix.pch"; sourceTree = "<group>"; };
-		D13053FC152EDD2F0028A900 /* AppDelegate.h */ = {isa = PBXFileReference; path = AppDelegate.h; sourceTree = "<group>"; };
+		D13053FB152EDD2F0028A900 /* APPThread-Example-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "APPThread-Example-Prefix.pch"; sourceTree = "<group>"; };
+		D13053FC152EDD2F0028A900 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		D13053FD152EDD2F0028A900 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		D130540B152EDE860028A900 /* TestAPPThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestAPPThread.h; sourceTree = "<group>"; };
+		D130540C152EDE860028A900 /* TestAPPThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestAPPThread.m; sourceTree = "<group>"; };
+		D143A399153610AC00439B6E /* APPThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = APPThread.h; sourceTree = "<group>"; };
+		D143A39A153610AC00439B6E /* APPThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = APPThread.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,6 +51,7 @@
 		D13053DE152EDD2F0028A900 = {
 			isa = PBXGroup;
 			children = (
+				D130540E152EDE990028A900 /* APPThread */,
 				D13053F3152EDD2F0028A900 /* APPThread-Example */,
 				D13053EC152EDD2F0028A900 /* Frameworks */,
 				D13053EA152EDD2F0028A900 /* Products */,
@@ -74,6 +81,8 @@
 			children = (
 				D13053FC152EDD2F0028A900 /* AppDelegate.h */,
 				D13053FD152EDD2F0028A900 /* AppDelegate.m */,
+				D130540B152EDE860028A900 /* TestAPPThread.h */,
+				D130540C152EDE860028A900 /* TestAPPThread.m */,
 				D13053F4152EDD2F0028A900 /* Supporting Files */,
 			);
 			path = "APPThread-Example";
@@ -88,6 +97,15 @@
 				D13053FB152EDD2F0028A900 /* APPThread-Example-Prefix.pch */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		D130540E152EDE990028A900 /* APPThread */ = {
+			isa = PBXGroup;
+			children = (
+				D143A399153610AC00439B6E /* APPThread.h */,
+				D143A39A153610AC00439B6E /* APPThread.m */,
+			);
+			path = APPThread;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -153,6 +171,8 @@
 			files = (
 				D13053FA152EDD2F0028A900 /* main.m in Sources */,
 				D13053FE152EDD2F0028A900 /* AppDelegate.m in Sources */,
+				D130540D152EDE860028A900 /* TestAPPThread.m in Sources */,
+				D143A39B153610AC00439B6E /* APPThread.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -190,7 +210,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				SDKROOT = iphoneos;
 			};
 			name = Debug;
@@ -208,7 +228,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -256,6 +276,7 @@
 				D1305403152EDD2F0028A900 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
