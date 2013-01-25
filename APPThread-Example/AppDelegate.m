@@ -15,20 +15,23 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    NSLog(@"mainThread (before) = %@", [NSThread currentThread]);
-    TestAPPThread *testThread = [[TestAPPThread alloc] init];
-    [testThread start];
-    NSArray *array = [testThread awesomeArrayWithFirstObject:@"first"];
-    [TestAPPThread testClassMethod];
-    NSLog(@"returned object from restThread = %@", array);
-    NSLog(@"mainThread (after) = %@", [NSThread currentThread]);
-    
-    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window addSubview:[self label]];
     [self.window makeKeyAndVisible];
+    
+    NSLog(@"mainThread (before) = %@", [NSThread currentThread]);
+    for (int i = 0; i < 30 ; i++) {
+        TestAPPThread *testThread = [[TestAPPThread alloc] init];
+        [testThread start];
+        NSArray *array = [testThread awesomeArrayWithFirstObject:@"first"];
+        [TestAPPThread testClassMethod];
+        NSLog(@"returned object from testThread = %@", array);
+        NSLog(@"mainThread (after) = %@", [NSThread currentThread]);
+        [testThread invalidate];
+    }
+    
     return YES;
 }
 

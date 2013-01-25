@@ -47,14 +47,19 @@ void APPThreadLocalPortInvalidationCallBack(CFMessagePortRef ms, void *info);
 @interface APPThread ()
 @property (retain, readonly) NSObject *APPNil;
 @property CFMessagePortRef APPThreadLocalPort;
+@property CFRunLoopSourceRef runLoopSource;
 @property (retain, atomic) id APPReturnObject;
 @end
 
 @implementation APPThread
+{
+    BOOL keepThreadAllive;
+}
 
 @synthesize APPNil = APPNil_;
 @synthesize APPThreadLocalPort = APPThreadLocalPort_;
 @synthesize APPReturnObject = APPReturnObject_;
+@synthesize runLoopSource = runLoopSource_;
 
 - (id)init
 {
@@ -80,123 +85,140 @@ void APPThreadLocalPortInvalidationCallBack(CFMessagePortRef ms, void *info);
 - (void)main
 {
     @autoreleasepool {
-        
+        keepThreadAllive = YES;
         if (!APPThreadPortName && !APPThreadLocalPort_) {
             generateAPPThreadPortName(self.class);
             createAPPThreadMessagePort(self);
         }
         
-        CFRunLoopRun();
+        //CFRunLoopRun();
+        do {
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+        } while (keepThreadAllive);
     }
+}
+
+- (void)invalidate
+{
+    CFRunLoopRemoveSource(CFRunLoopGetCurrent(), runLoopSource_, kCFRunLoopDefaultMode);
+    CFRelease(runLoopSource_);
+    
+    CFMessagePortInvalidate(APPThreadLocalPort_);
+    CFRelease(APPThreadLocalPort_);
+    
+    keepThreadAllive = NO;
 }
 
 #pragma mark - Redirect IMP
 
 id redirectIMP(id self, SEL _cmd, ...)
 {
-    SEL selector = _cmd; // _cmd = someMethod
-    NSString *selectorStr = NSStringFromSelector(selector);
-    // modify @selector(someMethod) to @selector(___someMethod) to reach real IMP of the -someMethod
-    selectorStr = [NSString stringWithFormat:@"%@%@", kAPPMethodPrefix, selectorStr];
-    selector = NSSelectorFromString(selectorStr);
-    
-    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:selector]];
-    
-    [invocation setSelector:selector];
-    
-    BOOL isInstanceMethod = YES;
-    Method realMethod = class_getInstanceMethod([self class], _cmd);
-    Class metaClass;
-    if (realMethod == NULL) {
-        metaClass = objc_getMetaClass(class_getName([self class]));
-        realMethod = class_getClassMethod(metaClass, _cmd);
-        isInstanceMethod = NO;
-    }
-    
-    NSUInteger numberOfArguments = method_getNumberOfArguments(realMethod);
-    
-    va_list argumentList = NULL;
-    NSMutableArray *args = [NSMutableArray array];
-    if (numberOfArguments > 2) {
-        id eachObject;
-        NSUInteger index = 2;
-        
-        va_start(argumentList, NULL);
-        while ((eachObject = va_arg(argumentList, id))) {
-            [invocation setArgument:&eachObject atIndex:index];
-            if (eachObject) {
-                [args addObject:eachObject];
-            } else {
-                [args addObject:[self APPNil]];
-            }
-            if (index == numberOfArguments - 2 + 1) {
-                break;
-            }
-            index++;
-        }
-        va_end(argumentList);
-    }
-    
-    [invocation retainArguments];
-    
     id returnObject = nil;
     
-    if (isInstanceMethod) {
+    @synchronized (self) {
         
-        //        const char *methodReturnType = [invocation.methodSignature methodReturnType];
-        //        const char *voidReturn = @encode(void);
-        //        if (*methodReturnType == *voidReturn) {
-        //            [self performSelector:@selector(handleInvocation:) onThread:self withObject:invocation waitUntilDone:NO];
-        //            return nil;
-        //        }
+        SEL selector = _cmd; // _cmd = someMethod
+        NSString *selectorStr = NSStringFromSelector(selector);
+        // modify @selector(someMethod) to @selector(___someMethod) to reach real IMP of the -someMethod
+        selectorStr = [NSString stringWithFormat:@"%@%@", kAPPMethodPrefix, selectorStr];
+        selector = NSSelectorFromString(selectorStr);
         
-        NSMutableArray *mutArray = [NSMutableArray arrayWithCapacity:3];
-        [mutArray insertObject:self atIndex:kSelfPtrKey];
-        [mutArray insertObject:NSStringFromSelector(selector) atIndex:kSelectorKey];
-        [mutArray insertObject:args atIndex:kArgumentsKey];
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:selector]];
         
-        NSValue *value = [NSValue value:&mutArray withObjCType:@encode(NSMutableArray *)];
-        NSData *data = [NSData dataWithValue:value];
+        [invocation setSelector:selector];
         
-        CFDataRef dataRef = ( CFDataRef)data;
-        
-        CFDataRef returnDataRef = sendMessageToAPPThreadMessagePortWithData(dataRef, self);
-        
-        //NSLog(@"redirectIMP before retainCount = %ld", CFGetRetainCount(returnDataRef));
-        
-        if (returnDataRef) {
-
-            CFIndex dataLength = CFDataGetLength(returnDataRef);
-            if (dataLength > 0) {
-                NSData *returnData = (NSData *)returnDataRef;
-                NSValue *returnValue = [NSValue valueWithBytes:[returnData bytes] objCType:[invocation.methodSignature methodReturnType]];
-                //[returnValue getValue:&returnObject];
-                if (returnValue) {
-                    returnObject = [[returnValue nonretainedObjectValue] retain];
-                    [[self APPReturnObject] autorelease];
-                    //returnObject = [self APPReturnObject];
-//                    NSLog(@"APPReturnObject = %@", [self APPReturnObject]);
-//                    NSLog(@"returnObject = %@", returnObject);
-                }
-                
-                if (returnDataRef) {
-                    //NSLog(@"retainCount when release = %ld", CFGetRetainCount(returnDataRef));
-                    if (CFGetRetainCount(returnDataRef) > 1) {
-                        CFRelease(returnDataRef);
-                    } else {
-                        [(NSData *)returnDataRef autorelease];
-                    }
-                }
-                
-            } else {
-                CFRelease(returnDataRef);
-            }
+        BOOL isInstanceMethod = YES;
+        Method realMethod = class_getInstanceMethod([self class], _cmd);
+        Class metaClass;
+        if (realMethod == NULL) {
+            metaClass = objc_getMetaClass(class_getName([self class]));
+            realMethod = class_getClassMethod(metaClass, _cmd);
+            isInstanceMethod = NO;
         }
         
-        //NSLog(@"redirectIMP after retainCount = %ld", CFGetRetainCount(returnDataRef));
+        NSUInteger numberOfArguments = method_getNumberOfArguments(realMethod);
         
-    } else {
-        [NSThread detachNewThreadSelector:@selector(handleInvocation:) toTarget:self withObject:invocation];
+        va_list argumentList = NULL;
+        NSMutableArray *args = [NSMutableArray array];
+        if (numberOfArguments > 2) {
+            id eachObject;
+            NSUInteger index = 2;
+            
+            va_start(argumentList, NULL);
+            while ((eachObject = va_arg(argumentList, id))) {
+                [invocation setArgument:&eachObject atIndex:index];
+                if (eachObject) {
+                    [args addObject:eachObject];
+                } else {
+                    [args addObject:[self APPNil]];
+                }
+                if (index == numberOfArguments - 2 + 1) {
+                    break;
+                }
+                index++;
+            }
+            va_end(argumentList);
+        }
+        
+        [invocation retainArguments];
+        
+        if (isInstanceMethod) {
+            
+            //        const char *methodReturnType = [invocation.methodSignature methodReturnType];
+            //        const char *voidReturn = @encode(void);
+            //        if (*methodReturnType == *voidReturn) {
+            //            [self performSelector:@selector(handleInvocation:) onThread:self withObject:invocation waitUntilDone:NO];
+            //            return nil;
+            //        }
+            
+            NSMutableArray *mutArray = [NSMutableArray arrayWithCapacity:3];
+            [mutArray insertObject:self atIndex:kSelfPtrKey];
+            [mutArray insertObject:NSStringFromSelector(selector) atIndex:kSelectorKey];
+            [mutArray insertObject:args atIndex:kArgumentsKey];
+            
+            NSValue *value = [NSValue value:&mutArray withObjCType:@encode(NSMutableArray *)];
+            NSData *data = [NSData dataWithValue:value];
+            
+            CFDataRef dataRef = ( CFDataRef)data;
+            
+            CFDataRef returnDataRef = sendMessageToAPPThreadMessagePortWithData(dataRef, self);
+            
+            //NSLog(@"redirectIMP before retainCount = %ld", CFGetRetainCount(returnDataRef));
+            
+            if (returnDataRef) {
+                
+                CFIndex dataLength = CFDataGetLength(returnDataRef);
+                if (dataLength > 0) {
+                    NSData *returnData = (NSData *)returnDataRef;
+                    NSValue *returnValue = [NSValue valueWithBytes:[returnData bytes] objCType:[invocation.methodSignature methodReturnType]];
+                    //[returnValue getValue:&returnObject];
+                    if (returnValue) {
+                        returnObject = [[returnValue nonretainedObjectValue] retain];
+                        [[self APPReturnObject] autorelease];
+                        //returnObject = [self APPReturnObject];
+                        //                    NSLog(@"APPReturnObject = %@", [self APPReturnObject]);
+                        //                    NSLog(@"returnObject = %@", returnObject);
+                    }
+                    
+                    if (returnDataRef) {
+                        //NSLog(@"retainCount when release = %ld", CFGetRetainCount(returnDataRef));
+                        if (CFGetRetainCount(returnDataRef) > 1) {
+                            CFRelease(returnDataRef);
+                        } else {
+                            [(NSData *)returnDataRef autorelease];
+                        }
+                    }
+                    
+                } else {
+                    CFRelease(returnDataRef);
+                }
+            }
+            
+            //NSLog(@"redirectIMP after retainCount = %ld", CFGetRetainCount(returnDataRef));
+            
+        } else {
+            [NSThread detachNewThreadSelector:@selector(handleInvocation:) toTarget:self withObject:invocation];
+        }
     }
     
     return returnObject;
@@ -270,13 +292,13 @@ id redirectIMP(id self, SEL _cmd, ...)
 
 void generateAPPThreadPortName(Class class)
 {
-    APPThreadPortName = [NSString stringWithFormat:@"%@%@%@", kAPPMethodPrefix, NSStringFromClass(class), kAPPMethodPrefix];
+    APPThreadPortName = [[NSString stringWithFormat:@"%@%@%@", kAPPMethodPrefix, NSStringFromClass(class), kAPPMethodPrefix] retain];
 }
 
 void createAPPThreadMessagePort(id selfPtr)
 {
     //CFMessagePortRef localPort = NULL; 
-    CFRunLoopSourceRef runLoopSource;  
+    //CFRunLoopSourceRef runLoopSource;  
     ((APPThread *)selfPtr).APPThreadLocalPort = CFMessagePortCreateLocal(kCFAllocatorDefault, // allocator 
                                                                          (CFStringRef)APPThreadPortName, // name for registering the port 
                                                                          &APPThreadLocalPortCallBack, // call this when message received 
@@ -288,12 +310,12 @@ void createAPPThreadMessagePort(id selfPtr)
         createAPPThreadMessagePort(selfPtr);
     } else {
         //CFMessagePortSetInvalidationCallBack([(APPThread *)selfPtr APPThreadLocalPort], APPThreadLocalPortInvalidationCallBack);
-        runLoopSource = CFMessagePortCreateRunLoopSource(kCFAllocatorDefault, // allocator 
+        ((APPThread *)selfPtr).runLoopSource = CFMessagePortCreateRunLoopSource(kCFAllocatorDefault, // allocator 
                                                          ((APPThread *)selfPtr).APPThreadLocalPort, // create run-loop source for this port 
                                                          0); // priority index 
-        CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopDefaultMode); 
+        CFRunLoopAddSource(CFRunLoopGetCurrent(), ((APPThread *)selfPtr).runLoopSource, kCFRunLoopDefaultMode); 
         CFRunLoopWakeUp(CFRunLoopGetCurrent());
-        CFRelease(runLoopSource); 
+        //CFRelease(runLoopSource); 
         //CFRelease(localPort);
     }
 }

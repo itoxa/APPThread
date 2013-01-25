@@ -37,5 +37,6 @@
 @interface APPThread : NSThread
 
 + (void)registerMethodsToExecuteOnlyInThisThread:(SEL)method1, ...;
+- (void)invalidate;
 
 @end
