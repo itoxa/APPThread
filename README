@@ -20,6 +20,3 @@
     - Registered instance methods won't invoke if method -start wasn't been called before.
     - If your registered instance method returns some object, this object will be returned in thread, from which method
         was called.
- 
-    TODO:
-    - Covenient way to stop the thread.
