@@ -15,6 +15,7 @@
 		D13053FE152EDD2F0028A900 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D13053FD152EDD2F0028A900 /* AppDelegate.m */; };
 		D130540D152EDE860028A900 /* TestAPPThread.m in Sources */ = {isa = PBXBuildFile; fileRef = D130540C152EDE860028A900 /* TestAPPThread.m */; };
 		D143A39B153610AC00439B6E /* APPThread.m in Sources */ = {isa = PBXBuildFile; fileRef = D143A39A153610AC00439B6E /* APPThread.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		D143A39D1536149C00439B6E /* README in Resources */ = {isa = PBXBuildFile; fileRef = D143A39C1536149C00439B6E /* README */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		D130540C152EDE860028A900 /* TestAPPThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestAPPThread.m; sourceTree = "<group>"; };
 		D143A399153610AC00439B6E /* APPThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = APPThread.h; sourceTree = "<group>"; };
 		D143A39A153610AC00439B6E /* APPThread.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = APPThread.m; sourceTree = "<group>"; };
+		D143A39C1536149C00439B6E /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +53,7 @@
 		D13053DE152EDD2F0028A900 = {
 			isa = PBXGroup;
 			children = (
+				D143A39C1536149C00439B6E /* README */,
 				D130540E152EDE990028A900 /* APPThread */,
 				D13053F3152EDD2F0028A900 /* APPThread-Example */,
 				D13053EC152EDD2F0028A900 /* Frameworks */,
@@ -159,6 +162,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D13053F8152EDD2F0028A900 /* InfoPlist.strings in Resources */,
+				D143A39D1536149C00439B6E /* README in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
